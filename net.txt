@@ -1,0 +1,48 @@
+https://snap.stanford.edu/data/ego-Facebook.html
+
+
+import networkx as nx
+import matplotlib.pyplot as plt
+import pandas as pd
+
+# Load the dataset
+df = pd.read_csv("facebook_combined.txt", sep=" ", header=None)
+df.columns = ["Source", "Target"]
+
+# Create a graph
+G = nx.from_pandas_edgelist(df, 'Source', 'Target')
+
+# Basic network analysis
+print("Number of nodes:", len(G.nodes))
+print("Number of edges:", len(G.edges))
+print("Network density:", nx.density(G))
+
+# Degree Centrality
+degree_centrality = nx.degree_centrality(G)
+print("\nDegree Centrality:")
+for node, centrality in degree_centrality.items():
+    print(f"{node}: {centrality:.3f}")
+
+# Betweenness Centrality
+betweenness_centrality = nx.betweenness_centrality(G)
+print("\nBetweenness Centrality:")
+for node, centrality in betweenness_centrality.items():
+    print(f"{node}: {centrality:.3f}")
+
+# Eigenvector Centrality
+eigenvector_centrality = nx.eigenvector_centrality(G)
+print("\nEigenvector Centrality:")
+for node, centrality in eigenvector_centrality.items():
+    print(f"{node}: {centrality:.3f}")
+
+# Community Detection
+communities = list(nx.community.label_propagation.label_propagation_communities(G))
+print("\nCommunities:")
+for idx, community in enumerate(communities):
+    print(f"Community {idx + 1}: {community}")
+
+# Draw the graph
+plt.figure(figsize=(10, 8))
+nx.draw(G, with_labels=False, node_color='skyblue', node_size=50, edge_color='black', linewidths=1)
+plt.title("Facebook Social Network Graph")
+plt.show()

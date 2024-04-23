@@ -1,0 +1,104 @@
+https://www.kaggle.com/datasets/himanshupoddar/zomato-bangalore-restaurants
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Load the dataset
+data = pd.read_csv("zomato.csv")
+
+# Display the first few rows of the dataset
+print(data.head())
+
+# Check the shape of the dataset
+print("\nShape of the dataset:")
+print(data.shape)
+
+# Check for missing values
+print("\nMissing values:")
+print(data.isnull().sum())
+
+# Data Manipulation
+
+# Drop unnecessary columns
+data.drop(['url', 'phone', 'menu_item'], axis=1, inplace=True)
+
+# Fill missing values
+data['rate'] = data['rate'].str.replace('/5', '').str.strip()
+data['rate'] = pd.to_numeric(data['rate'], errors='coerce')
+data['rate'].fillna(data['rate'].mean(), inplace=True)
+
+# Remove '/5' from the 'votes' column and convert it to numeric
+data['votes'] = data['votes'].str.replace(' votes', '')
+data['votes'] = pd.to_numeric(data['votes'], errors='coerce')
+
+# Remove the word '₹' from the 'approx_cost(for two people)' column and convert it to numeric
+data['approx_cost(for two people)'] = data['approx_cost(for two people)'].str.replace(',', '').str.replace('₹', '')
+data['approx_cost(for two people)'] = pd.to_numeric(data['approx_cost(for two people)'], errors='coerce')
+
+# Fill missing values in 'rest_type', 'cuisines', 'approx_cost(for two people)', and 'reviews_list' columns
+data['rest_type'].fillna('Not Available', inplace=True)
+data['cuisines'].fillna('Not Available', inplace=True)
+data['approx_cost(for two people)'].fillna(data['approx_cost(for two people)'].mean(), inplace=True)
+data['reviews_list'].fillna('Not Available', inplace=True)
+
+# Data Analysis and Visualization
+
+# Distribution of restaurants based on the 'rate'
+plt.figure(figsize=(10, 6))
+sns.histplot(data['rate'], kde=True, color='blue', bins=20)
+plt.title('Distribution of Restaurant Ratings')
+plt.xlabel('Rating')
+plt.ylabel('Frequency')
+plt.show()
+
+# Distribution of restaurants based on the 'online_order' feature
+plt.figure(figsize=(8, 6))
+data['online_order'].value_counts().plot(kind='bar', color='skyblue')
+plt.title('Distribution of Restaurants that Accept Online Orders')
+plt.xlabel('Accepts Online Orders')
+plt.ylabel('Count')
+plt.xticks(rotation=0)
+plt.show()
+
+# Distribution of restaurants based on the 'book_table' feature
+plt.figure(figsize=(8, 6))
+data['book_table'].value_counts().plot(kind='bar', color='lightgreen')
+plt.title('Distribution of Restaurants that Provide Table Booking')
+plt.xlabel('Provides Table Booking')
+plt.ylabel('Count')
+plt.xticks(rotation=0)
+plt.show()
+
+# Top 10 most common restaurant types
+plt.figure(figsize=(10, 6))
+data['rest_type'].value_counts().head(10).plot(kind='bar', color='orange')
+plt.title('Top 10 Most Common Restaurant Types')
+plt.xlabel('Restaurant Type')
+plt.ylabel('Count')
+plt.xticks(rotation=45)
+plt.show()
+
+# Top 10 most popular cuisines
+plt.figure(figsize=(10, 6))
+data['cuisines'].value_counts().head(10).plot(kind='bar', color='lightcoral')
+plt.title('Top 10 Most Popular Cuisines')
+plt.xlabel('Cuisine')
+plt.ylabel('Count')
+plt.xticks(rotation=45)
+plt.show()
+
+# Distribution of restaurants based on the 'city' feature
+plt.figure(figsize=(12, 6))
+data['city'].value_counts().plot(kind='bar', color='salmon')
+plt.title('Distribution of Restaurants Across Cities')
+plt.xlabel('City')
+plt.ylabel('Count')
+plt.xticks(rotation=90)
+plt.show()
+
+# Correlation heatmap
+plt.figure(figsize=(10, 8))
+sns.heatmap(data.corr(), annot=True, cmap='coolwarm')
+plt.title('Correlation Heatmap')
+plt.show()

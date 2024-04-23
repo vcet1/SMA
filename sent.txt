@@ -1,0 +1,74 @@
+https://www.kaggle.com/datasets/crowdflower/twitter-airline-sentiment
+
+import pandas as pd
+import numpy as np
+import re
+from textblob import TextBlob
+import networkx as nx
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Load the dataset
+df = pd.read_csv("Tweets.csv")
+
+# Sample 10 random tweets
+sample_tweets = df.sample(n=15, random_state=1)
+
+# Function to clean the text
+def clean_text(text):
+    text = re.sub(r'@[A-Za-z0-9]+', '', text)  # Remove @mentions
+    text = re.sub(r'#', '', text)  # Remove '#' symbol
+    text = re.sub(r'RT[\s]+', '', text)  # Remove RT
+    text = re.sub(r'https?:\/\/\S+', '', text)  # Remove the hyperlink
+    return text
+
+# Clean the text
+sample_tweets['clean_text'] = sample_tweets['text'].apply(clean_text)
+
+# Function for sentiment analysis using TextBlob
+def analyze_sentiment(text):
+    analysis = TextBlob(text)
+    if analysis.sentiment.polarity > 0:
+        return 'positive'
+    elif analysis.sentiment.polarity == 0:
+        return 'neutral'
+    else:
+        return 'negative'
+
+# Apply sentiment analysis
+sample_tweets['sentiment'] = sample_tweets['clean_text'].apply(analyze_sentiment)
+
+# Create a graph
+G = nx.Graph()
+
+# Add nodes with sentiment attribute
+for i, row in sample_tweets.iterrows():
+    G.add_node(row['text'], sentiment=row['sentiment'])
+
+# Basic network analysis
+print("Number of nodes:", len(G.nodes))
+print("Number of edges:", len(G.edges))
+print("Network density:", nx.density(G))
+
+# Display sentiment of each tweet
+for i, row in sample_tweets.iterrows():
+    print(f"Tweet: {row['text']} - Sentiment: {row['sentiment']}")
+
+# Draw the graph
+plt.figure(figsize=(12, 5))
+
+# Countplot for sentiment distribution
+plt.subplot(1,2,1)
+sns.countplot(x='sentiment', data=sample_tweets, palette='coolwarm')
+plt.title('Sentiment Distribution')
+
+# Draw the graph
+plt.subplot(1,2,2)
+pos = nx.spring_layout(G)
+sentiment_colors = {'positive': 'green', 'neutral': 'blue', 'negative': 'red'}
+node_colors = [sentiment_colors[G.nodes[node]['sentiment']] for node in G.nodes()]
+nx.draw(G, pos, with_labels=False, node_color=node_colors, node_size=50, edge_color='gray')
+plt.title("Sentiment Analysis on Twitter US Airline Sentiment")
+
+plt.tight_layout()
+plt.show()
